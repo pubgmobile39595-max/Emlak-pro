@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emlak Haritası</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+body { margin:0; padding:0; font-family:-apple-system,'Segoe UI',Arial,sans-serif; }
+#map { width:100%; height:100vh; }
+.popup-card { min-width:200px; }
+.popup-card h4 { margin:0 0 6px 0; font-size:14px; color:#2c3e50; }
+.popup-card p { margin:4px 0; font-size:12px; color:#7f8c8d; }
+.popup-card .pp { color:#e74c3c; font-weight:800; font-size:15px; }
+.popup-card button { background:linear-gradient(135deg,#e74c3c,#c0392b); color:#fff; border:none; padding:7px 14px; border-radius:8px; cursor:pointer; font-weight:700; font-size:12px; margin-top:8px; width:100%; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+var map = L.map('map').setView([39.0, 35.0], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+var properties = [
+  { id:1, title:"Deniz Manzaralı Lüks Daire", location:"Beşiktaş, İstanbul", price:8500000, type:"Satılık", lat:41.0430, lng:29.0095 },
+  { id:2, title:"Merkezi Kiralık Daire", location:"Çankaya, Ankara", price:22000, type:"Kiralık", lat:39.9208, lng:32.8541 },
+  { id:3, title:"Bahçeli Müstakil Villa", location:"Çeşme, İzmir", price:15750000, type:"Satılık", lat:38.3236, lng:26.3067 },
+  { id:4, title:"Yeni Bina Stüdyo", location:"Kadıköy, İstanbul", price:15000, type:"Kiralık", lat:40.9906, lng:29.0278 },
+  { id:5, title:"Aile İçin Geniş Daire", location:"Nilüfer, Bursa", price:4250000, type:"Satılık", lat:40.2138, lng:28.9722 },
+  { id:6, title:"Lüks Rezidans", location:"Ataşehir, İstanbul", price:45000, type:"Kiralık", lat:40.9923, lng:29.1244 },
+  { id:7, title:"Yatırımlık Arsa", location:"Didim, Aydın", price:1200000, type:"Arsa", lat:37.3853, lng:27.2658 },
+  { id:8, title:"Cadde Üzeri Dükkan", location:"Şişli, İstanbul", price:35000, type:"İş Yeri", lat:41.0602, lng:28.9877 }
+];
+
+function formatPrice(p, t) {
+  var s = p.toLocaleString('tr-TR') + ' ₺';
+  if (t === 'Kiralık' || t === 'İş Yeri') s += '/ay';
+  return s;
+}
+
+function addAllMarkers() {
+  var markers = [];
+  for (var i = 0; i < properties.length; i++) {
+    var p = properties[i];
+    if (!p.lat || !p.lng) continue;
+    var m = L.marker([p.lat, p.lng]).addTo(map);
+    var html = '<div class="popup-card"><h4>' + p.title + '</h4>' +
+      '<p>📍 ' + p.location + '</p>' +
+      '<p class="pp">' + formatPrice(p.price, p.type) + '</p>' +
+      '<button onclick="goToDetail(' + p.id + ')">Detayı Gör</button></div>';
+    m.bindPopup(html);
+    markers.push(m);
+  }
+  if (markers.length > 0) {
+    var group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.15));
+  }
+}
+
+function goToDetail(id) {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'openListing', id: id }, '*');
+  }
+}
+
+addAllMarkers();
+
+// Sunucudan gelen ilanları da ekle
+fetch('/api/listings')
+  .then(function(r){ return r.json(); })
+  .then(function(list) {
+    if (list && list.length > 0) {
+      for (var i = 0; i < list.length; i++) {
+        var p = list[i];
+        if (p.lat && p.lng) {
+          var m = L.marker([p.lat, p.lng]).addTo(map);
+          var html = '<div class="popup-card"><h4>' + p.title + '</h4>' +
+            '<p>📍 ' + p.location + '</p>' +
+            '<p class="pp">' + formatPrice(p.price, p.type) + '</p>' +
+            '<button onclick="goToDetail(' + p.id + ')">Detayı Gör</button></div>';
+          m.bindPopup(html);
+        }
+      }
+    }
+  })
+  .catch(function(e) { console.log('Sunucu yok'); });
+</script>
+</body>
+</html>

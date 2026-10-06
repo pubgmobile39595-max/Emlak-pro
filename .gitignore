@@ -1,0 +1,40 @@
+# Yedekler
+yedek_*/
+yedek*.html
+yeni.html
+deneme*.html
+test_*.html
+basit*.html
+index_yedek*.html
+karisik*.html
+index_bozuk*.html
+index_yeni.html
+index_eski.html
+
+# Eski denemeler
+app.py
+emlak.db
+script.js
+style.css
+test.sh
+kur.sh
+server_yedek_*.js
+site1/
+emlak_v2_2026.html
+
+# Data (kişisel)
+data/users.json
+data/messages.json
+data/listings.json
+
+# Uploads
+uploads/
+
+# Node
+node_modules/
+
+# Sistem
+.DS_Store
+*.log
+.vscode/
+.idea/
