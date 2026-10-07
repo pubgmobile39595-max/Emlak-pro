@@ -1,3 +1,4 @@
+const bcrypt = require('bcryptjs');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -146,26 +147,32 @@ function handleAPI(req, res, url) {
         res.end('{"error":"Bu kullanıcı adı alınmış"}');
         return;
       }
-      const user = {
-        id: Date.now(),
-        username: payload.username,
-        password: payload.password,
-        role: payload.username === 'admin' ? 'admin' : 'user',
-        createdAt: new Date().toISOString()
-      };
-      users.push(user);
-      writeJSON(USERS_FILE, users);
-      res.writeHead(201);
-      res.end(JSON.stringify({ id:user.id, username:user.username, role:user.role }));
+      bcrypt.hash(payload.password, 10, (err, hash) => {
+        if (err) { res.writeHead(500); res.end('{"error":"Hash hatası"}'); return; }
+        const user = {
+          id: Date.now(),
+          username: payload.username,
+          password: hash,
+          role: payload.username === 'admin' ? 'admin' : 'user',
+          createdAt: new Date().toISOString()
+        };
+        users.push(user);
+        writeJSON(USERS_FILE, users);
+        res.writeHead(201);
+        res.end(JSON.stringify({ id:user.id, username:user.username, role:user.role }));
+      });
       return;
     }
 
     if (url === '/api/login' && req.method === 'POST') {
       const users = readJSON(USERS_FILE);
-      const u = users.find(x => x.username === payload.username && x.password === payload.password);
+      const u = users.find(x => x.username === payload.username);
       if (!u) { res.writeHead(401); res.end('{"error":"Kullanıcı adı veya şifre hatalı"}'); return; }
-      res.writeHead(200);
-      res.end(JSON.stringify({ id:u.id, username:u.username, role:u.role }));
+      bcrypt.compare(payload.password, u.password, (err, ok) => {
+        if (err || !ok) { res.writeHead(401); res.end('{"error":"Kullanıcı adı veya şifre hatalı"}'); return; }
+        res.writeHead(200);
+        res.end(JSON.stringify({ id:u.id, username:u.username, role:u.role }));
+      });
       return;
     }
 

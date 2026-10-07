@@ -1,0 +1,32 @@
+{
+  "name": "emlakpro",
+  "version": "1.0.0",
+  "description": "🏠 Türkiye'nin emlak platformu",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "echo \"Test yok\" && exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pubgmobile39595-max/Emlak-pro.git"
+  },
+  "keywords": [
+    "emlak",
+    "real-estate",
+    "turkey",
+    "nodejs",
+    "javascript"
+  ],
+  "author": "pubgmobile39595-max",
+  "license": "MIT",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/pubgmobile39595-max/Emlak-pro/issues"
+  },
+  "homepage": "https://github.com/pubgmobile39595-max/Emlak-pro#readme",
+  "dependencies": {
+    "bcryptjs": "^3.0.3"
+  }
+}
