@@ -2,6 +2,12 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-change-me';
 const JWT_EXPIRES = process.env.JWT_EXPIRES || '7d';
+const db = require('./db');
+db.initDatabase().then(function(){
+  console.log('✅ SQLite bağlantısı hazır');
+}).catch(function(err){
+  console.error('❌ SQLite hatası:', err.message);
+});
 
 const bcrypt = require('bcryptjs');
 const http = require('http');
@@ -97,28 +103,75 @@ function handleAPI(req, res, url) {
 
     // ===== İLANLAR =====
     if (url === '/api/listings' && req.method === 'GET') {
+      const rows = db.query("SELECT * FROM listings ORDER BY created_at DESC");
+      const list = rows.map(r => ({
+        id: r.id,
+        title: r.title,
+        location: r.location,
+        price: r.price,
+        type: r.type,
+        rooms: r.rooms,
+        area: r.area,
+        bath: r.bath,
+        lat: r.lat,
+        lng: r.lng,
+        img: r.img,
+        images: r.img ? [r.img] : [],
+        desc: r.desc,
+        phone: r.phone,
+        ownerId: r.owner_id,
+        ownerName: r.owner_name,
+        views: r.views,
+        avgRating: r.avg_rating,
+        ratingCount: r.rating_count,
+        createdAt: r.created_at
+      }));
       res.writeHead(200);
-      res.end(JSON.stringify(readJSON(DATA_FILE)));
+      res.end(JSON.stringify(list));
       return;
     }
 
-    if (url === '/api/listings' && req.method === 'POST') {
       const list = readJSON(DATA_FILE);
-      const newItem = payload;
-      newItem.id = Date.now();
-      newItem.createdAt = new Date().toISOString();
-      newItem.views = 0;
-      // Çoklu resim desteği - images dizisi yoksa oluştur
-      if (!newItem.images || !Array.isArray(newItem.images)) {
-      newItem.images = newItem.img ? [newItem.img] : [];
-    }
-      list.push(newItem);
-      writeJSON(DATA_FILE, list);
-      res.writeHead(201);
-      res.end(JSON.stringify(newItem));
-      return;
-    }
-
+  const newItem = payload;
+  newItem.id = Date.now();
+  newItem.createdAt = new Date().toISOString();
+  newItem.views = 0;
+  // Çoklu resim desteği - images dizisi yoksa oluştur
+  if (!newItem.images || !Array.isArray(newItem.images)) {
+  newItem.images = newItem.img ? [newItem.img] : [];
+}
+if (url === '/api/listings' && req.method === 'POST') {
+  const id = Date.now();
+  const createdAt = new Date().toISOString();
+  db.run(
+    "INSERT INTO listings (id, title, location, price, type, rooms, area, bath, lat, lng, img, desc, phone, owner_id, owner_name, views, avg_rating, rating_count, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,0,0,?)",
+    [id, payload.title, payload.location, payload.price, payload.type, payload.rooms || null, payload.area || null, payload.bath || null, payload.lat || null, payload.lng || null, payload.img || null, payload.desc || null, payload.phone || null, payload.ownerId || null, payload.ownerName || null, createdAt]
+  );
+  const newItem = {
+    id: id,
+    title: payload.title,
+    location: payload.location,
+    price: payload.price,
+    type: payload.type,
+    rooms: payload.rooms,
+    area: payload.area,
+    bath: payload.bath,
+    lat: payload.lat,
+    lng: payload.lng,
+    img: payload.img,
+    desc: payload.desc,
+    phone: payload.phone,
+    ownerId: payload.ownerId,
+    ownerName: payload.ownerName,
+    views: 0,
+    avgRating: 0,
+    ratingCount: 0,
+    createdAt: createdAt
+  };
+  res.writeHead(201);
+  res.end(JSON.stringify(newItem));
+  return;
+}
     if (url.startsWith('/api/listings/') && req.method === 'PUT') {
       const id = parseInt(url.split('/').pop());
       const list = readJSON(DATA_FILE);
@@ -157,8 +210,8 @@ function handleAPI(req, res, url) {
 
     // ===== KULLANICILAR =====
     if (url === '/api/register' && req.method === 'POST') {
-      const users = readJSON(USERS_FILE);
-      if (users.find(u => u.username === payload.username)) {
+      const existing = db.query("SELECT id FROM users WHERE username = ?", [payload.username]);
+      if (existing.length > 0) {
         res.writeHead(400);
         res.end('{"error":"Bu kullanıcı adı alınmış"}');
         return;
@@ -172,8 +225,8 @@ function handleAPI(req, res, url) {
           role: payload.username === 'admin' ? 'admin' : 'user',
           createdAt: new Date().toISOString()
         };
-        users.push(user);
-        writeJSON(USERS_FILE, users);
+        db.run("INSERT INTO users (id, username, password, role, created_at) VALUES (?,?,?,?,?)",
+          [user.id, user.username, user.password, user.role, user.createdAt]);
         const token = jwt.sign(
           { id: user.id, username: user.username, role: user.role },
           JWT_SECRET,
@@ -186,8 +239,8 @@ function handleAPI(req, res, url) {
     }
 
     if (url === '/api/login' && req.method === 'POST') {
-      const users = readJSON(USERS_FILE);
-      const u = users.find(x => x.username === payload.username);
+      const users = db.query("SELECT * FROM users WHERE username = ?", [payload.username]);
+      const u = users.length > 0 ? users[0] : null;
       if (!u) { res.writeHead(401); res.end('{"error":"Kullanıcı adı veya şifre hatalı"}'); return; }
       bcrypt.compare(payload.password, u.password, (err, ok) => {
         if (err || !ok) { res.writeHead(401); res.end('{"error":"Kullanıcı adı veya şifre hatalı"}'); return; }
@@ -213,28 +266,48 @@ if (url === '/api/me' && req.method === 'GET') {
 
 // ===== MESAJLAR =====
 if (url === '/api/users' && req.method === 'GET') {
-      const users = readJSON(USERS_FILE);
-      const safeUsers = users.map(u => ({ id: u.id, username: u.username, role: u.role, createdAt: u.createdAt }));
+      const users = db.query("SELECT id, username, role, created_at as createdAt FROM users");
       res.writeHead(200);
-      res.end(JSON.stringify(safeUsers));
+      res.end(JSON.stringify(users));
       return;
     }
 
-    if (url === '/api/messages' && req.method === 'GET') {
+
+if (url === '/api/messages' && req.method === 'GET') {
+  const rows = db.query("SELECT * FROM messages ORDER BY created_at DESC");
+  const msgs = rows.map(r => ({
+    id: r.id,
+    fromId: r.from_id,
+    fromName: r.from_name,
+    toId: r.to_id,
+    toName: r.to_name,
+    listingId: r.listing_id,
+    text: r.text,
+    read: r.read === 1,
+    createdAt: r.created_at
+  }));
   res.writeHead(200);
-  res.end(JSON.stringify(readJSON(MSGS_FILE)));
+  res.end(JSON.stringify(msgs));
   return;
 }
-
 if (url === '/api/messages' && req.method === 'POST') {
-  const list = readJSON(MSGS_FILE);
-  const msg = Object.assign({}, payload, {
-    id: Date.now(),
-    createdAt: new Date().toISOString(),
-    read: false
-  });
-  list.push(msg);
-  writeJSON(MSGS_FILE, list);
+  const msgId = Date.now();
+  const createdAt = new Date().toISOString();
+  db.run(
+    "INSERT INTO messages (id, from_id, from_name, to_id, to_name, listing_id, text, read, created_at) VALUES (?,?,?,?,?,?,?,0,?)",
+    [msgId, payload.fromId, payload.fromName, payload.toId, payload.toName, payload.listingId || null, payload.text, createdAt]
+  );
+  const msg = {
+    id: msgId,
+    fromId: payload.fromId,
+    fromName: payload.fromName,
+    toId: payload.toId,
+    toName: payload.toName,
+    listingId: payload.listingId,
+    text: payload.text,
+    read: false,
+    createdAt: createdAt
+  };
   res.writeHead(201);
   res.end(JSON.stringify(msg));
   return;
@@ -243,8 +316,18 @@ if (url === '/api/messages' && req.method === 'POST') {
 // Kullanıcının mesajlarını getir
 if (url.startsWith('/api/messages/user/') && req.method === 'GET') {
   const userId = parseInt(url.split('/').pop());
-  const all = readJSON(MSGS_FILE);
-  const mine = all.filter(m => m.fromId === userId || m.toId === userId);
+  const rows = db.query("SELECT * FROM messages WHERE from_id = ? OR to_id = ? ORDER BY created_at ASC", [userId, userId]);
+  const mine = rows.map(r => ({
+    id: r.id,
+    fromId: r.from_id,
+    fromName: r.from_name,
+    toId: r.to_id,
+    toName: r.to_name,
+    listingId: r.listing_id,
+    text: r.text,
+    read: r.read === 1,
+    createdAt: r.created_at
+  }));
   res.writeHead(200);
   res.end(JSON.stringify(mine));
   return;
@@ -253,9 +336,7 @@ if (url.startsWith('/api/messages/user/') && req.method === 'GET') {
 // Mesajı okundu yap
 if (url.match(/^\/api\/messages\/\d+\/read$/) && req.method === 'POST') {
   const id = parseInt(url.split('/')[3]);
-  const list = readJSON(MSGS_FILE);
-  const msg = list.find(m => m.id === id);
-  if (msg) { msg.read = true; writeJSON(MSGS_FILE, list); }
+  db.run("UPDATE messages SET read = 1 WHERE id = ?", [id]);
   res.writeHead(200);
   res.end('{"ok":true}');
   return;
