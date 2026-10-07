@@ -588,6 +588,9 @@ function safeListen(id, event, fn){
   if(el) el.addEventListener(event, fn);
   else console.warn('Element yok: ' + id);
 }
+// JWT WRAPPER
+(function(){ var _f = window.fetch; window.fetch = function(u, o){ o = o || {}; o.headers = o.headers || {}; var t = localStorage.getItem('emlak_token'); if(t && typeof u === 'string' && u.indexOf('/api/') === 0){ o.headers['Authorization'] = 'Bearer ' + t; } return _f(u, o); }; })();
+
 var currentUser = null;
 var chatWith = null;
 var chatListingId = null;
@@ -1479,6 +1482,7 @@ function submitAuth(){
   .then(function(user){
     currentUser = user;
     try { localStorage.setItem('emlak_user', JSON.stringify(user)); } catch(e){}
+    try { if(user.token) localStorage.setItem('emlak_token', user.token); } catch(e){}
     updateUserUI();
     closeAuth();
     startNotifPolling();
@@ -1528,6 +1532,7 @@ function deleteMyListing(id){
 function logout(){
   currentUser = null;
   try { localStorage.removeItem('emlak_user'); } catch(e){}
+  try { localStorage.removeItem('emlak_token'); } catch(e){}
   updateUserUI();
   document.getElementById('myListingsModal').style.display = 'none';
   alert('👋 Çıkış yapıldı');

@@ -1,3 +1,8 @@
+require('dotenv').config();
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'default-secret-change-me';
+const JWT_EXPIRES = process.env.JWT_EXPIRES || '7d';
+
 const bcrypt = require('bcryptjs');
 const http = require('http');
 const fs = require('fs');
@@ -38,6 +43,17 @@ const NO_CACHE_HEADERS = {
   'Pragma': 'no-cache',
   'Expires': '0'
 };
+// ===== JWT DOGRULAMA ===== 
+function verifyToken(req){
+  const auth = req.headers.authorization;
+  if(!auth || !auth.startsWith('Bearer ')) return null;
+  try {
+    return jwt.verify(auth.replace('Bearer ', ''), JWT_SECRET);
+  } catch(e) {
+    return null;
+  }
+}
+
 const server = http.createServer((req, res) => {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -158,8 +174,13 @@ function handleAPI(req, res, url) {
         };
         users.push(user);
         writeJSON(USERS_FILE, users);
+        const token = jwt.sign(
+          { id: user.id, username: user.username, role: user.role },
+          JWT_SECRET,
+          { expiresIn: JWT_EXPIRES }
+        );
         res.writeHead(201);
-        res.end(JSON.stringify({ id:user.id, username:user.username, role:user.role }));
+        res.end(JSON.stringify({ id:user.id, username:user.username, role:user.role, token:token }));
       });
       return;
     }
@@ -170,11 +191,25 @@ function handleAPI(req, res, url) {
       if (!u) { res.writeHead(401); res.end('{"error":"Kullanıcı adı veya şifre hatalı"}'); return; }
       bcrypt.compare(payload.password, u.password, (err, ok) => {
         if (err || !ok) { res.writeHead(401); res.end('{"error":"Kullanıcı adı veya şifre hatalı"}'); return; }
+        const token = jwt.sign(
+          { id: u.id, username: u.username, role: u.role },
+          JWT_SECRET,
+          { expiresIn: JWT_EXPIRES }
+        );
         res.writeHead(200);
-        res.end(JSON.stringify({ id:u.id, username:u.username, role:u.role }));
+        res.end(JSON.stringify({ id:u.id, username:u.username, role:u.role, token:token }));
       });
       return;
     }
+
+// ===== ME (JWT test) =====
+if (url === '/api/me' && req.method === 'GET') {
+  const user = verifyToken(req);
+  if (!user) { res.writeHead(401); res.end('{"error":"Token gerekli"}'); return; }
+  res.writeHead(200);
+  res.end(JSON.stringify(user));
+  return;
+}
 
 // ===== MESAJLAR =====
 if (url === '/api/users' && req.method === 'GET') {
