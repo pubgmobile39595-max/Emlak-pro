@@ -361,7 +361,11 @@ if (url.match(/^\/api\/messages\/\d+\/read$/) && req.method === 'POST') {
   });
 }
 
-server.listen(PORT, () => {
-  console.log('🚀 EmlakPro sunucu çalışıyor: http://localhost:' + PORT);
-  console.log('📁 Data klasörü: ' + path.join(__dirname, 'data'));
-});
+if (require.main === module) {
+  server.listen(PORT, () => {
+    console.log('🚀 EmlakPro sunucu çalışıyor: http://localhost:' + PORT);
+    console.log('📁 Data klasörü: ' + path.join(__dirname, 'data'));
+  });
+}
+
+module.exports = server;
