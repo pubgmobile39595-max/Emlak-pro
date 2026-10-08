@@ -1,0 +1,19 @@
+{
+  "name": "EmlakPro - Türkiye'nin Emlak Platformu",
+  "short_name": "EmlakPro",
+  "description": "Binlerce emlak ilanı, kolay arama, güvenli platform",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f4f6f9",
+  "theme_color": "#e74c3c",
+  "lang": "tr",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

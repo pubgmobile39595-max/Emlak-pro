@@ -1,4 +1,4 @@
-function Header({ user, favorites, unreadCount, lang, t, onLoginClick, onLogout, onFavoritesClick, onLangToggle }) {
+function Header({ user, favorites, unreadCount, lang, t, onLoginClick, onLogout, onFavoritesClick, onLangToggle, onMessagesClick }) {
   return (
     <header className="header">
       <div className="nav">
@@ -15,6 +15,7 @@ function Header({ user, favorites, unreadCount, lang, t, onLoginClick, onLogout,
           {user && (
             <button 
               className="fav-header-btn"
+              onClick={onMessagesClick}
               title="Mesajlar"
             >
               💬

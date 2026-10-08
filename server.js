@@ -76,18 +76,28 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // ===== STATIC =====
+  // ===== STATIC (React dist) =====
+  const distDir = path.join(__dirname, 'frontend', 'dist');
+  
   let filePath = url === '/' ? '/index.html' : url;
-  filePath = path.join(__dirname, decodeURIComponent(filePath));
+  filePath = path.join(distDir, decodeURIComponent(filePath));
 
   fs.readFile(filePath, (err, data) => {
     if (err) {
-      res.writeHead(404, {'Content-Type':'text/plain; charset=utf-8'});
-      res.end('404 - Bulunamadı');
+      // SPA fallback
+      fs.readFile(path.join(distDir, 'index.html'), (err2, data2) => {
+        if (err2) {
+          res.writeHead(404, {'Content-Type':'text/plain; charset=utf-8'});
+          res.end('404 - Bulunamadı');
+          return;
+        }
+        res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8'});
+        res.end(data2);
+      });
       return;
     }
     const ext = path.extname(filePath).toLowerCase();
-res.writeHead(200, Object.assign({ 'Content-Type': MIME[ext] || 'application/octet-stream' }, NO_CACHE_HEADERS));
+    res.writeHead(200, Object.assign({ 'Content-Type': MIME[ext] || 'application/octet-stream' }, NO_CACHE_HEADERS));
     res.end(data);
   });
 });

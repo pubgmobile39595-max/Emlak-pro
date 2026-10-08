@@ -4,6 +4,7 @@ import Hero from './components/Hero'
 import Stats from './components/Stats'
 import Listings from './components/Listings'
 import MapView from './components/MapView'
+import MessagesModal from './components/MessagesModal'
 import DetailModal from './components/DetailModal'
 import AddListingModal from './components/AddListingModal'
 import AuthModal from './components/AuthModal'
@@ -26,6 +27,7 @@ function App() {
   const [showAuthModal, setShowAuthModal] = useState(false)
   const [showFavModal, setShowFavModal] = useState(false)
   const [showSavedSearches, setShowSavedSearches] = useState(false)
+  const [showMessages, setShowMessages] = useState(false)
   const [user, setUser] = useState(null)
   const [favorites, setFavorites] = useState([])
   
@@ -96,6 +98,7 @@ function App() {
         onLoginClick={() => setShowAuthModal(true)}
         onLogout={handleLogout}
         onFavoritesClick={() => setShowFavModal(true)}
+        onMessagesClick={() => setShowMessages(true)}
         onLangToggle={toggleLang}
       />
       
@@ -127,6 +130,13 @@ function App() {
         <DetailModal
           listing={selectedListing}
           onClose={() => setSelectedListing(null)}
+        />
+      )}
+      
+      {showMessages && user && (
+        <MessagesModal
+          user={user}
+          onClose={() => setShowMessages(false)}
         />
       )}
       

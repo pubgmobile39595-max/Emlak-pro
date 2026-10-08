@@ -1,13 +1,47 @@
 <!doctype html>
-<html lang="en">
+<html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#e74c3c" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="EmlakPro" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    
+    <!-- SEO -->
+    <title>EmlakPro - Türkiye'nin Emlak Platformu</title>
+    <meta name="description" content="Binlerce emlak ilanı, kolay arama, güvenli platform. Satılık, kiralık daire, villa, arsa ve iş yeri ilanları." />
+    <meta name="keywords" content="emlak, satılık, kiralık, daire, villa, arsa, iş yeri, konut, gayrimenkul" />
+    <meta name="author" content="EmlakPro" />
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="EmlakPro - Türkiye'nin Emlak Platformu" />
+    <meta property="og:description" content="Binlerce emlak ilanı, kolay arama" />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/favicon.svg" />
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="EmlakPro" />
+    <meta name="twitter:description" content="Türkiye'nin emlak platformu" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/sw.js')
+            .then(function(reg) { console.log('SW kayitli:', reg.scope); })
+            .catch(function(err) { console.warn('SW hatasi:', err); });
+        });
+      }
+    </script>
   </body>
 </html>
