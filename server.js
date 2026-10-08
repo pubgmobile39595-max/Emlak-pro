@@ -14,7 +14,7 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const DATA_FILE = path.join(__dirname, 'data', 'listings.json');
 const USERS_FILE = path.join(__dirname, 'data', 'users.json');
 const MSGS_FILE = path.join(__dirname, 'data', 'messages.json');

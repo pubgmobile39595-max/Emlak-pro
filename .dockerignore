@@ -1,0 +1,28 @@
+# Yedekler
+yedek_*/
+yedek*.html
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Data (Railway'de volume kullanılır)
+data/*.json
+
+# Uploads (volume kullanılır)
+uploads/*
+
+# Sistem
+.DS_Store
+*.log
+.vscode/
+.idea/
+
+# Git
+.git/
+.gitignore
+
+# Eski dosyalar
+site1/
+*.bak
+*.old
