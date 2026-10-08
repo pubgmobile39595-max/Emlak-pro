@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Emlak Haritası</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+body { margin: 0; padding: 0; font-family: Arial, sans-serif; }
+#map { width: 100%; height: 100vh; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+var map = L.map('map').setView([39.0, 35.0], 6);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+var coords = {
+  'İstanbul': [41.0082, 28.9784],
+  'Ankara': [39.9334, 32.8597],
+  'İzmir': [38.4237, 27.1428],
+  'Bursa': [40.1826, 29.0665],
+  'Beşiktaş': [41.0430, 29.0095],
+  'Kadıköy': [40.9906, 29.0278],
+  'Şişli': [41.0602, 28.9877],
+  'Ataşehir': [40.9923, 29.1244],
+  'Çeşme': [38.3236, 26.3067],
+  'Nilüfer': [40.2138, 28.9722],
+  'Çankaya': [39.9208, 32.8541],
+  'Didim': [37.3853, 27.2658]
+};
+
+function getCoords(listing) {
+  if (listing.lat && listing.lng) return [listing.lat, listing.lng];
+  var parts = (listing.location || '').split(',').map(function(p){ return p.trim(); });
+  for (var i = 0; i < parts.length; i++) {
+    if (coords[parts[i]]) return coords[parts[i]];
+  }
+  return [39.0, 35.0];
+}
+
+fetch('http://localhost:3000/api/listings')
+  .then(function(r){ return r.json(); })
+  .then(function(listings) {
+    var markers = [];
+    var positionCount = {};
+    
+    listings.forEach(function(listing) {
+      var c = getCoords(listing);
+      var key = c[0].toFixed(2) + ',' + c[1].toFixed(2);
+      var idx = positionCount[key] || 0;
+      positionCount[key] = idx + 1;
+      
+      if (idx > 0) {
+        var angle = (idx * 72) * Math.PI / 180;
+        var offset = 0.02 + idx * 0.01;
+        c = [c[0] + offset * Math.cos(angle), c[1] + offset * Math.sin(angle)];
+      }
+      
+      var marker = L.marker(c).addTo(map);
+      var price = (listing.price || 0).toLocaleString('tr-TR') + ' ₺';
+      
+      marker.bindPopup(
+        '<div style="min-width:200px;font-family:Arial;">' +
+        '<h4 style="margin:0 0 6px;font-size:14px;">' + listing.title + '</h4>' +
+        '<p style="margin:4px 0;font-size:12px;color:#7f8c8d;">📍 ' + listing.location + '</p>' +
+        '<p style="margin:4px 0;color:#e74c3c;font-weight:bold;font-size:15px;">' + price + '</p>' +
+        '<button onclick="goToDetail(' + listing.id + ')" style="background:linear-gradient(135deg,#e74c3c,#c0392b);color:#fff;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;font-weight:700;width:100%;">Detayı Gör</button>' +
+        '</div>'
+      );
+      markers.push(marker);
+    });
+    
+    if (markers.length > 0) {
+      var group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.15));
+    }
+  })
+  .catch(function(e){ console.error('API hatası:', e); });
+
+function goToDetail(id) {
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: 'openListing', id: id }, '*');
+  }
+}
+</script>
+</body>
+</html>

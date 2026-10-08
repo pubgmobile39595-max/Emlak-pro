@@ -31,7 +31,14 @@ function ListingCard({ listing, isFavorite, onClick, onFavoriteClick }) {
         <h3>{listing.title}</h3>
         <p className="location">📍 {listing.location}</p>
         <div className="price">{formatPrice(listing.price, listing.type)}</div>
+        {(listing.avgRating > 0 || listing.ratingCount > 0) && (
+          <div className="card-rating">
+            ⭐ {(listing.avgRating || 0).toFixed(1)}
+            <span className="count">({listing.ratingCount || 0})</span>
+          </div>
+        )}
         <div className="card-info">
+          {listing.views > 0 && <span>👁 {listing.views}</span>}
           {listing.rooms && listing.rooms !== '-' && <span>🛏 {listing.rooms}</span>}
           {listing.area && <span>📐 {listing.area} m²</span>}
           {listing.bath > 0 && <span>🛁 {listing.bath}</span>}

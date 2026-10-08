@@ -420,3 +420,299 @@ body {
   gap: 16px;
   margin-top: 20px;
 }
+
+/* ============= ANİMASYONLAR ============= */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.card {
+  animation: fadeInUp 0.4s ease-out backwards;
+}
+
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(4) { animation-delay: 0.2s; }
+.card:nth-child(5) { animation-delay: 0.25s; }
+.card:nth-child(6) { animation-delay: 0.3s; }
+
+.modal-content {
+  animation: scaleIn 0.3s ease-out;
+}
+
+.user-btn, .fav-header-btn, .add-btn {
+  transition: transform 0.2s, background 0.3s;
+}
+
+.user-btn:hover, .fav-header-btn:hover {
+  transform: scale(1.05);
+}
+
+.add-btn:hover {
+  transform: scale(1.1) rotate(90deg);
+}
+
+/* ============= RATING ============= */
+.rating-section {
+  padding: 14px;
+  background: #f4f6f9;
+  border-radius: 10px;
+  margin: 16px 0;
+}
+
+.rating-stars {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.rating-stars .star {
+  font-size: 32px;
+  color: #ddd;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.2s;
+  user-select: none;
+}
+
+.rating-stars .star.active {
+  color: #f39c12;
+}
+
+.rating-stars .star:hover {
+  transform: scale(1.2);
+}
+
+.rating-info {
+  text-align: center;
+  font-size: 13px;
+  color: #7f8c8d;
+  font-weight: 600;
+}
+
+/* Kart üstünde puan */
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #f39c12;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.card-rating .count {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+/* ============= LOAN CALCULATOR ============= */
+.loan-calc-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  color: #fff;
+  border: none;
+  padding: 13px 22px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 14px;
+  margin-top: 14px;
+  transition: transform 0.2s;
+}
+
+.loan-calc-btn:hover {
+  transform: scale(1.02);
+}
+
+.loan-result {
+  margin-top: 18px;
+  padding: 18px;
+  background: linear-gradient(135deg, #f39c12, #e67e22);
+  border-radius: 12px;
+  color: #fff;
+}
+
+.loan-monthly-label {
+  font-size: 13px;
+  opacity: 0.9;
+  margin-bottom: 6px;
+}
+
+.loan-monthly {
+  font-size: 28px;
+  font-weight: 800;
+  margin-bottom: 14px;
+}
+
+.loan-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.loan-grid span {
+  display: block;
+  opacity: 0.9;
+  margin-bottom: 2px;
+}
+
+.loan-grid strong {
+  font-size: 15px;
+}
+
+.loan-down-info {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* ============= LANG BUTTON ============= */
+.lang-btn {
+  background: #f4f6f9;
+  border: 1px solid #e5e8eb;
+  padding: 10px 16px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: 0.3s;
+}
+
+.lang-btn:hover {
+  background: #e74c3c;
+  color: #fff;
+  border-color: #e74c3c;
+}
+
+/* ============= SAVED SEARCHES ============= */
+.search-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 15px;
+  flex-wrap: wrap;
+}
+
+.save-search-btn {
+  background: linear-gradient(135deg, #27ae60, #229954);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: 0.3s;
+}
+
+.save-search-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4);
+}
+
+.saved-searches-btn {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: 0.3s;
+}
+
+.saved-searches-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.saved-searches-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.saved-search-item {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 14px;
+  border-bottom: 1px solid #e5e8eb;
+}
+
+.saved-search-info {
+  flex: 1;
+  cursor: pointer;
+}
+
+.saved-search-info h4 {
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: #2c3e50;
+}
+
+.saved-search-info p {
+  font-size: 12px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.saved-search-delete {
+  background: #e74c3c;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: 0.2s;
+}
+
+.saved-search-delete:hover {
+  transform: scale(1.1);
+}
+
+/* ============= MAP ============= */
+.map-section {
+  max-width: 1300px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+.map-section h2 {
+  text-align: center;
+  margin-bottom: 18px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.map-container {
+  width: 100%;
+  height: 450px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .map-container {
+    height: 350px;
+  }
+}
